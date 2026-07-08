@@ -128,7 +128,7 @@ npx skills add MaybeBio/Single-cell-Omics-Skill -a claude-code
 git clone https://github.com/MaybeBio/Single-cell-Omics-Skill ~/.claude/skills/Single-cell-Omics-Skill
 ```
 
-然后在 Claude Code 里：
+然后在 Claude Code 里自动触发或手动触发`/Single-cell-Omics-Skill`：
 
 ```
 > 我有一批 CITE-seq 数据，该怎么开始分析？
