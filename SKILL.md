@@ -1,5 +1,5 @@
 ---
-name: single-cell-best-practices
+name: Single-cell-Omics-Skill
 description: Distilled best-practice workflows for single-cell multi-omics analysis — covers scRNA-seq, scATAC-seq, CITE-seq, spatial, AIRR, and multimodal integration. Use when planning or executing single-cell analysis pipelines, choosing QC/normalization/integration methods, or interpreting results from scanpy/muon/scirpy/squidpy/scvi-tools.
 ---
 
