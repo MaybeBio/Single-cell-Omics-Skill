@@ -169,3 +169,60 @@
 **When to use**: predict perturbation response in unseen cell types
 **How**: Train VAE on control + perturbed → vector arithmetic (perturbation = mean(perturbed) - mean(control) in latent) → apply vector to unseen cell type latent → decode to predict response.
 **Trade-offs**: Assumes linear perturbation effect; works for similar cell types; fails for drastically different biology.
+
+## Tool Selection Patterns (Ch 13-17)
+
+### Per-stage tool assembly (scRNA-seq)
+**When to use**: building any scRNA-seq pipeline
+**How**: Identify stage (FASTQ -> ambient -> doublet -> QC -> normalize -> HVG -> integrate -> cluster -> annotate -> DGE -> downstream) -> pick best-in-class per stage -> glue via AnnData. scverse (Python) or Seurat+Bioconductor (R) are the two ecosystems; pick one per project.
+**Trade-offs**: No single tool excels at every stage; assembly requires more setup but yields better results than monolithic suites.
+
+### scATAC suite choice (ArchR vs Signac vs SnapATAC2)
+**When to use**: starting scATAC analysis
+**How**: ArchR (R, >1M cells, most features, fastest); Signac (R, Seurat user, easiest if already in Seurat); SnapATAC2 (Rust+Python, >5M cells, matrix-free spectral clustering). All implement TF-IDF + LSI + clustering + integration.
+**Trade-offs**: ArchR = steepest learning curve but best default; Signac = least setup if Seurat; SnapATAC2 = newest, smaller community.
+
+### scHi-C preprocessing: BandNorm + Higashi imputation
+**When to use**: any scHi-C analysis
+**How**: (1) filter cells with <5k uniquely mapped reads; (2) `BandNorm` (distance-centric normalization, regresses out distance-decay); (3) `Higashi` (hypergraph imputation, borrows from kNN cells); (4) `Fast-Higashi` for clustering (tensor decomposition).
+**Trade-offs**: BandNorm > ICE/KR for single cells; imputation mandatory due to sparsity; <50k contacts per cell is typical.
+
+### Spatial resolution tier dictates pipeline
+**When to use**: starting spatial analysis
+**How**: (1) Subcellular (Xenium, MERFISH, Stereo-seq, Visium HD) -> segmentation (Baysor/Cellpose) -> per-cell counts; (2) Single-cell tier (Visium HD cellular) -> scRNA-seq tools directly; (3) Spot-based (Visium, Slide-seq, Curio) -> deconvolution (Cell2location best, RCTD fast).
+**Trade-offs**: Spot-based needs deconvolution + matched reference; subcellular needs segmentation; resolution tier dominates tool choice.
+
+### SVG detection: Moran's I vs SpatialDE vs nnSVG
+**When to use**: identifying spatially variable genes
+**How**: `squidpy.gr.spatial_autocorr(mode="moran")` for fast exploratory; `nnSVG` (nearest-neighbor GP, scalable) for production; `SpatialDE` (GP, handles covariates) for small datasets. Always run on raw counts after normalization, not on HVG subset.
+**Trade-offs**: Moran's I ignores covariates (faster, less accurate); SpatialDE/nnSVG model spatial structure properly but slower.
+
+### Spatial domain detection: graph-aware methods
+**When to use**: identifying tissue regions
+**How**: SpaGCN (graph + CNN + histology image), STAGATE (graph + autoencoder), BANKSY (cell × microenvironment product space), BASS (multi-scale), PRECAST (probabilistic embedding + alignment). All incorporate spatial neighbor graph; pure Leiden on expression misses spatial coherence.
+**Trade-offs**: SpaGCN uses histology image (best if available); STAGATE denoises via spatial neighbors; BANKSY is scalable.
+
+### Reference-first annotation
+**When to use**: cell type annotation
+**How**: (1) check CellTypist models (immune, brain); (2) check Human Cell Atlas / Tabula Sapiens for tissue-specific; (3) if reference exists, use scArches (scVI-based) for query -> reference mapping with uncertainty; (4) only train custom classifier if no reference matches.
+**Trade-offs**: Reference atlases save months; CellTypist + scArches covers most use cases; always validate with marker dotplot.
+
+### Pseudobulk DGE (Crowell 2020 gold standard)
+**When to use**: condition comparison within cell types
+**How**: `decoupler.pp.pseudobulk(adata, sample_col, groups_col, layer="counts")` -> `filter_by_expr` + `filter_by_prop` -> `PyDESeq2` (Python) or `edgeR`/`DESeq2` (R) with design `~ condition` per cell type. Always preserve `layers["counts"]` from the start.
+**Trade-offs**: Sample-level view avoids pseudoreplication; needs ≥3 biological replicates per condition; loses single-cell resolution but properly handles biological variation.
+
+### Tool discovery via curated catalogs
+**When to use**: starting a new analysis type or finding alternatives
+**How**: `seandavi/awesome-single-cell` (comprehensive, by category), `scRNA-tools.org` (database with paper links), `scverse.org` (curated scverse-compatible), modality-specific lists (`mdozmorov/scATAC-seq_notes`, `mdozmorov/scHiC_notes`, `crazyhottommy/awesome_spatial_omics`).
+**Trade-offs**: Curated catalogs > PubMed search; scverse list is smaller but guarantees interoperability; modality-specific lists have the most depth.
+
+### Benchmark before adopting novel methods
+**When to use**: choosing between methods
+**How**: Check scIB (integration, 16 methods, 13 metrics), pipeComp (preprocessing), CellBench (mixology), Crowell 2020 (DE), scATAC-benchmarking (ATAC). If method not in benchmark, run mini-benchmark on your data before adopting.
+**Trade-offs**: Novel preprint methods often fail to outperform established; benchmarks reveal robustness; mini-benchmark takes a day but saves weeks of bad results.
+
+### Census-first cross-study queries
+**When to use**: need scRNA-seq reference across studies
+**How**: Use `cellxgene-census` Python/R API to query CZ CELLxGENE Census (33M+ cells, >60K genes, standardized). Avoid downloading individual datasets; the census handles harmonization.
+**Trade-offs**: Census is standardized and large; may not have latest datasets; tissue-specific atlases (HCA, Tabula) may be more curated for niche use cases.

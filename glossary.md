@@ -93,3 +93,157 @@
 **VDJ recombination** — Somatic assembly of V-(D)-J gene segments creating adaptive immune receptor diversity (Ch 11).
 
 **WNN (Weighted Nearest Neighbors)** — Seurat v4 multimodal integration; per-cell modality weights + joint kNN graph (Ch 12).
+
+## Tool Ecosystem Glossary (Ch 13-17)
+
+**AMULET** - scATAC-seq doublet detection; counts genomic positions with >2 overlapping fragments (impossible for singlet diploid); catches homotypic doublets missed by scDblFinder (Ch 14).
+
+**ArchR** - R scATAC-seq suite; HDF5-backed; >1M cells; most features including doublet detection, peak calling, trajectory (Ch 14).
+
+**awesome-single-cell (seandavi)** - GitHub curated catalog of single-cell tools, databases, tutorials; the canonical entry point for tool discovery (Ch 17).
+
+**BandNorm** - scHi-C distance-centric normalization; regresses out dominant distance-decay signal; outperforms bulk ICE/KR on single cells (Ch 15).
+
+**BANKSY** - Spatial domain method; unifies cell typing and tissue segmentation by constructing product space of cell's own and microenvironment transcriptomes (Ch 16).
+
+**Baysor** - Stain-free cell segmentation for subcellular spatial transcriptomics (Xenium, MERFISH); uses transcript density (Ch 16).
+
+**Cell2location** - Bayesian spatial deconvolution; best-in-class for spot-based spatial; needs scRNA reference (Ch 16).
+
+**CellBender** - Deep learning ambient RNA correction for scRNA-seq; GPU-accelerated (Ch 13).
+
+**CellChat** - Cell-cell communication inference; shiny app available; one of several CCC methods (Ch 13).
+
+**CellPhoneDB** - Ligand-receptor plausibility inference; permutation-based; one of L-R methods (Ch 13, 06).
+
+**Cellpose** - Deep learning cell segmentation for imaging-based spatial transcriptomics (Ch 16).
+
+**CellTypist** - Logistic regression cell type annotation with pretrained models (Immune_All_Low/High, etc.); part of Teichmann lab (Ch 13).
+
+**cisTopic** - LDA-based topic modeling for scATAC-seq; binarized matrix -> cell topics + region topics (Ch 14).
+
+**chromVAR** - scATAC-seq per-cell TF activity via deviation scores; background = all peaks with motif (Ch 14).
+
+**CosMx (Nanostring)** - Imaging-based subcellular spatial transcriptomics; ~1000 gene panel (Ch 16).
+
+**Curio Seeker** - Commercial Slide-seq platform; ~10μm beads (Ch 16).
+
+**CZ CELLxGENE Census** - Standardized scRNA-seq census; >33M cells, >60K genes; Python/R API via `cellxgene-census` (Ch 17).
+
+**Dip-C** - Diploid chromatin conformation capture; haplotype-resolved; ~5x more contacts than bulk scHi-C (Ch 15).
+
+**DORC (Domain of Regulatory Chromatin)** - Gene + correlated accessible peaks within ~200kb; used by FigR for GRN inference (Ch 14, 08).
+
+**DoubletFinder** - R scRNA-seq doublet detection; simulated doublets + PCA + classification (Ch 13).
+
+**FigR** - Paired RNA+ATAC GRN inference; cisTopic LDA -> DORC -> ChromVAR -> TF-DORC correlations (Ch 14, 08).
+
+**Fast-Higashi** - scHi-C tensor decomposition (PARAFAC2); faster than Higashi; rare cell type identification (Ch 15).
+
+**Giotto** - Spatial omics integrative analysis toolbox; R/Python (Ch 16).
+
+**Harmony** - Fast batch correction on PCA embeddings; iterates soft clustering + linear correction (Ch 13, 03, 10).
+
+**Higashi** - scHi-C hypergraph representation learning; imputation + clustering + cell embedding (Ch 15).
+
+**hickit** - C toolkit for diploid scHi-C; TAD calling, phase imputation, 3D modeling (Ch 15).
+
+**Human Cell Atlas (HCA)** - Global consortium; tissue-specific atlases; downloadable via CZ CELLxGENE (Ch 17).
+
+**inferCNV** - Copy-number variation inference from scRNA-seq; relative expression vs reference (Ch 13).
+
+**LIANA** - Consensus CCC framework; aggregates CellPhoneDB, NATMI, Connectome, SingleCellSignalR; `li.mt.rank_aggregate` (Ch 13, 06).
+
+**Liger** - NMF-based multi-omics integration; R/Python; unpaired datasets (Ch 13, 12).
+
+**MAESTRO** - End-to-end scRNA + scATAC pipeline; CCA-based integration (Ch 14).
+
+**MERFISH** - Multiplexed error-robust FISH; imaging-based spatial; 100-1000 gene panel (Ch 16).
+
+**Monocle3** - R trajectory inference; DDRTree dimensionality reduction; branching trajectories (Ch 13).
+
+**NATMI** - Cell-cell communication; ligand-receptor mean expression + specificity (Ch 13).
+
+**NicheNet** - Ligand activity inference; AUPR of ligand-target regulatory potential vs DE geneset (Ch 13, 06).
+
+**nnSVG** - Nearest-neighbor Gaussian process SVG detection; scalable; handles covariates (Ch 16).
+
+**Numbat** - Allele-aware CNV inference from scRNA-seq; phasing + allele-specific expression (Ch 13).
+
+**OSCA (Orchestrating Single-Cell Analysis)** - Bioconductor book-format tutorial; R-based (Ch 17).
+
+**OSTA (Orchestrating Spatially-resolved Transcriptomics Analysis)** - Bioconductor spatial tutorial; R-based (Ch 17).
+
+**Palantir** - Multi-fate branching trajectory; marks terminal states; diffusion pseudotime + MSC Markov chain (Ch 13, 04).
+
+**pipeComp** - Pipeline comparison framework; scRNA-seq preprocessing benchmark (Ch 17).
+
+**PRECAST** - Probabilistic embedding, clustering, alignment for spatial transcriptomics integration (Ch 16).
+
+**PyDESeq2** - Python port of DESeq2; bulk DE on pseudobulk counts; standard for scRNA DGE (Ch 13, 05).
+
+**RCTD** - Robust decomposition of cell type mixtures; spatial deconvolution; R/BayesSpace (Ch 16).
+
+**Scanorama** - Panorama-stitching inspired scRNA-seq integration; corrects batches via mutual nearest neighbors (Ch 13).
+
+**scAI** - Integrative analysis of scRNA + scATAC/methylation; matrix factorization (Ch 14, 12).
+
+**scArches** - Reference mapping with scVI/scANVI; query -> reference transfer + uncertainty (Ch 13, 03).
+
+**scDblFinder** - R scRNA-seq doublet detection; simulated doublets + PCA + classification; recommended (Ch 13).
+
+**SCENIC** - 3-step GRN inference: co-expression (GRNBoost) -> motif (cisTarget) -> AUCell; per-cell regulon activity (Ch 13, 06).
+
+**SCENIC+** - End-to-end paired RNA+ATAC GRN inference; extends SCENIC to chromatin (Ch 14).
+
+**scHiCExplorer** - Python scHi-C toolbox; processing -> normalization -> clustering -> compartment -> viz (Ch 15).
+
+**scIB metrics** - Integration benchmarking suite; Bio (ASW_label, NMI, ARI, isolated_label, cLISI) + Batch (ASW_label/batch, PCR, graph_conn, iLISI, kBET); Overall = 0.6·Bio + 0.4·Batch (Ch 13, 17).
+
+**scHiCluster** - scHi-C imputation + clustering; linear convolution + random walk with restarts (Ch 15).
+
+**scOpen** - scATAC-seq imputation via regularized NMF; improves downstream cisTopic, chromVAR, Cicero (Ch 14).
+
+**scSPRITE** - Single-cell split-pool recognition of interactions by tag extension; multi-way interactions (Ch 15).
+
+**scVelo** - RNA velocity inference; dynamical mode preferred over steady-state (Ch 13, 04).
+
+**Seurat v3/v4/v5** - R single-cell toolkit; anchors (v3), WNN (v4), multi-modal integration (v5); standard for ADT/CITE-seq (Ch 13, 10, 12).
+
+**Signac** - Seurat extension for scATAC-seq; ChromatinAssay class; LSI + TF-IDF (Ch 14).
+
+**SimpleDiff** - scHi-C differential contact analysis; Wilcoxon on distance-specific Z-score-transformed contacts (Ch 15).
+
+**Slide-seq / Slide-seq v2** - Spatial transcriptomics; 10μm beads; commercialized as Curio Seeker (Ch 16).
+
+**SnapATAC / SnapATAC2** - scATAC-seq pipeline; bin-based; SnapATAC2 = Rust+Python rewrite with matrix-free spectral clustering (Ch 14).
+
+**SnapHiC / SnapHiC2** - scHi-C loop calling at 10kb; random walk imputation + paired t-test; SnapHiC2 = sliding window (Ch 15).
+
+**SoupX** - R ambient RNA correction; estimates contamination from empty droplets (Ch 13).
+
+**SpaGCN** - Spatial domain detection; graph + CNN; integrates histology image (Ch 16).
+
+**SpatialDE / SpatialDE2** - Gaussian process SVG detection; handles covariates; SpatialDE2 = faster reimplementation (Ch 16).
+
+**SpatialData** - scverse spatial data structure; extends AnnData with coordinates + images (Ch 16).
+
+**SpatialExperiment** - Bioconductor spatial data structure; extends SingleCellExperiment (Ch 16).
+
+**STAGATE** - Spatial domain detection; graph + autoencoder; denoises via spatial neighbors (Ch 16).
+
+**Stereo-seq (BGI)** - Subcellular spatial transcriptomics; DNA nanoball-patterned arrays; large tissue (Ch 16).
+
+**Tabula Muris / Tabula Sapiens** - Mouse / human multi-tissue scRNA-seq atlas; reference for annotation (Ch 17).
+
+**Tangram** - Spatial transcriptomics imputation + deconvolution; optimal transport; maps scRNA to spatial (Ch 16).
+
+**Visium / Visium HD** - 10x Genomics spatial; Visium = 55μm spots, Visium HD = 2μm bins (Ch 16).
+
+**Voyager** - Bioconductor package; exploratory spatial data analysis for SpatialFeatureExperiment (Ch 16).
+
+**WGCNA / scWGCNA** - Weighted gene co-expression network analysis; scWGCNA = meta-cell extension for single-cell (Ch 13).
+
+**Xenium (10x)** - Imaging-based subcellular spatial transcriptomics; ~300-5000 gene panel (Ch 16).
+
+**Zonation** - Spatial gradient of cell identities (e.g., liver lobule, intestinal crypt); identified via spatial domains (Ch 16).

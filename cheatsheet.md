@@ -215,3 +215,127 @@ Has raw counts in .layers["counts"]?
 7. Harmony batch correction if donor-driven fragmentation
 8. Annotate via marker dotplot
 9. Joint RNA+ADT analysis: WNN (Seurat) or totalVI
+
+## Tool Ecosystem Decision Rules (Ch 13-17)
+
+### scRNA-seq Suite Selection
+| Scenario | Recommended |
+|---|---|
+| New project, Python | scverse (scanpy + muon + scirpy + squidpy + scvi-tools) |
+| New project, R | Seurat v5 + Bioconductor (scran, scater) |
+| >5M cells, GPU | scverse + scvi-tools + rapids-singlecell |
+| Learning / textbook | Bioconductor OSCA book + scater |
+
+### scATAC-seq Suite Selection
+| Scenario | Recommended |
+|---|---|
+| Default, >1M cells, all features | ArchR |
+| Already Seurat user | Signac |
+| >5M cells, need speed | SnapATAC2 |
+| Rare cell types, topic modeling | cisTopic |
+
+### Spatial Platform -> Pipeline
+| Platform | Tier | Pipeline |
+|---|---|---|
+| Visium | Spot-based | Space Ranger -> Cell2location deconv |
+| Visium HD | Subcellular | Space Ranger v3+ -> Baysor segmentation |
+| Xenium / CosMx / MERFISH | Subcellular | Platform software -> Baysor/Cellpose -> scRNA-seq tools |
+| Stereo-seq | Subcellular | STOmics pipeline -> segmentation -> scRNA-seq tools |
+| Slide-seq / Curio Seeker | Spot-based (10μm) | Custom -> Cell2location/RCTD deconv |
+
+### scHi-C Pipeline Selection
+| Task | Recommended |
+|---|---|
+| Normalization | BandNorm (default) |
+| Imputation | Higashi (hypergraph) |
+| Clustering | Fast-Higashi (tensor) |
+| Subcompartment | scGHOST |
+| Loop calling | SnapHiC2 (5kb) or scGSLoop (low cell count) |
+| TAD-like domains | DeDoc2 (no imputation needed) |
+| 3D reconstruction | hickit (diploid-aware) |
+
+### DGE Method Quick Pick
+| Scenario | Method |
+|---|---|
+| Condition comparison, ≥3 replicates | Pseudobulk + PyDESeq2/edgeR |
+| Multi-sample multi-group | muscat |
+| Single-cell with random effects | NEBULA |
+| Complex design (interactions) | PyDESeq2 with design formula |
+| Per-cell DE | **Don't** - pseudoreplication |
+
+### Integration Method Quick Pick (scRNA-seq)
+| Scenario | Method |
+|---|---|
+| Multi-batch raw counts, GPU | scVI/scANVI |
+| Multi-batch, no GPU, fast | Harmony |
+| Graph-only, simple | BBKNN |
+| Reference mapping | scArches (scVI-based) |
+| Cross-species/cross-modality | Seurat anchors (CCA+MNN) |
+| Atlas-scale, many datasets | Scanorama or Liger |
+
+### Spatial Tool Quick Pick
+| Task | Method |
+|---|---|
+| Fast SVG (exploratory) | `squidpy.gr.spatial_autocorr(mode="moran")` |
+| SVG with covariates | nnSVG (scalable) or SpatialDE (small data) |
+| Spatial domain | SpaGCN (with histology) or STAGATE (without) |
+| Deconvolution | Cell2location (best) or RCTD (fast) |
+| Cell-cell communication | NicheNet spatial + Squidpy lr + spatial filter |
+| Imputation to single-cell | Tangram or iSpatial |
+| 3D alignment | PASTE or PRECAST |
+
+### Tool Discovery Decision Tree
+```
+Need to find a tool?
+├── Check scverse.org first (Python, interoperable)
+├── Check seandavi/awesome-single-cell (comprehensive catalog)
+├── Check modality-specific lists:
+│   ├── scRNA-seq -> mdozmorov/scRNA-seq_notes
+│   ├── scATAC-seq -> mdozmorov/scATAC-seq_notes
+│   ├── scHi-C -> mdozmorov/scHiC_notes
+│   └── Spatial -> crazyhottommy/awesome_spatial_omics
+├── Check scRNA-tools.org (database with paper links)
+└── Check benchmarks before adopting:
+    ├── Integration -> scIB
+    ├── Preprocessing -> pipeComp
+    ├── DE -> Crowell 2020 (pseudobulk wins)
+    └── scATAC -> scATAC-benchmarking
+```
+
+### Reference Atlas Quick Pick
+| Tissue / Use Case | Resource |
+|---|---|
+| Immune cells (human) | CellTypist Immune_All_Low/High |
+| Brain (human) | Allen Brain Cell Atlas |
+| CD4 T cells | projecTILs reference |
+| Cross-tissue (human) | Tabula Sapiens |
+| Cross-tissue (mouse) | Tabula Muris Senis |
+| Cross-study census | CZ CELLxGENE Census (33M+ cells) |
+| Tumor microenvironment | TISCH database |
+
+### Ambient RNA / Doublet Decision
+| Scenario | Method |
+|---|---|
+| scRNA-seq ambient RNA, GPU | CellBender |
+| scRNA-seq ambient RNA, no GPU | SoupX |
+| scRNA-seq doublet | scDblFinder (per-sample) |
+| scATAC-seq doublet | AMULET + scDblFinder (both!) |
+| ADT doublet | Marker-based (CD3+CD19+, CD3+CD14+) |
+
+### CNV from scRNA-seq Decision
+| Scenario | Method |
+|---|---|
+| Tumor vs normal reference | inferCNV |
+| Allele-aware, phased | Numbat |
+| Allele-aware, haplotype | HoneyBADGER |
+| Tumor subclone detection | SCEVAN |
+
+### Cell-Cell Communication Decision
+| Question | Method |
+|---|---|
+| L-R plausibility (consensus) | LIANA `rank_aggregate` |
+| L-R plausibility (single method) | CellPhoneDB |
+| Ligand activity (functional) | NicheNet |
+| Spatial CCC | NicheNet spatial + Squidpy lr |
+| Cross-condition CCC | Tensor-cell2cell |
+| CCC over time | CellChat |
