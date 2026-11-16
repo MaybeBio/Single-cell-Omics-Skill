@@ -247,3 +247,49 @@
 **Xenium (10x)** - Imaging-based subcellular spatial transcriptomics; ~300-5000 gene panel (Ch 16).
 
 **Zonation** - Spatial gradient of cell identities (e.g., liver lobule, intestinal crypt); identified via spatial domains (Ch 16).
+
+## anndata & Scanpy API Glossary (Ch 18-24)
+
+**accessor (`anndata.acc`, `A`)** - Global accessor that builds `AdRef` references to AnnData arrays (`A.X[:, "gene"]`, `A.obsm["pca"][:, 0]`); used for presence checks (`ref in adata`), extraction (`adata[ref]`), and Marsilea plotting (Ch 18, 24).
+
+**AnnCollection / AnnCollectionView** - Lazy multi-file wrapper that jointly indexes multiple AnnData without copying `X`/`layers`; subsetting returns a `View`; `iterate_axis(n)` yields batches for out-of-core algorithms (Ch 20).
+
+**annbatch.Loader** - Separate scverse package for PyTorch/JAX minibatch streaming from many AnnData; `chunk_size`/`batch_size`/`preload_to_gpu`; replaces deprecated `AnnLoader` (Ch 20).
+
+**awkward array** - Ragged/nested data (e.g. per-gene transcript lists) in `layers`/`obsm`/`varm`/`uns`; experimental since anndata 0.9 (Ch 20).
+
+**backed mode** - `read_h5ad(path, backed="r")` keeps data on disk and loads on access; `isbacked`, `filename`, `file.close()` (Ch 18).
+
+**BBKNN** - Batch-balanced kNN: builds the neighbor graph within each batch, then merges; symmetric graph-level integration that leaves `X` invariant (Ch 23).
+
+**cell cycle scoring** - `sc.tl.score_genes_cell_cycle` (Tirosh 97 genes: 43 S + 54 G2M) adds `S_score`/`G2M_score`/`phase`; regress via `sc.pp.regress_out` (Ch 24).
+
+**consolidated metadata** - zarr v3 stores write a `.zmetadata` by default; the store becomes immutable — mutate with `use_consolidated=False` then re-consolidate (Ch 19).
+
+**dask-backed AnnData** - `X`/`obsm`/`layers` hold `da.Array` chunks (lazy, distributed); `to_memory()` materializes; scanpy dask support is experimental (Ch 20, 24).
+
+**h5ad vs zarr** - Two AnnData on-disk formats sharing one self-describing layout: zarr (cloud-native, parallel, async, sharded) vs h5ad (single HDF5 file, serial). Prefer zarr for large/remote (Ch 19).
+
+**ingest** - `sc.tl.ingest(adata, adata_ref, obs=...)` maps labels+embeddings from an annotated reference to query via PCA + neighbor search; asymmetric (like scmap/MNN) (Ch 23).
+
+**layers / obsm / varm / obsp / varp / raw** - AnnData slots: `layers` = same-shape alt matrices (raw counts), `obsm`/`varm` = per-cell/gene multi-dim (`X_umap`, `PCs`), `obsp`/`varp` = pairwise graphs (`connectivities`), `raw` = pre-normalization snapshot (Ch 18).
+
+**marsilea** - Compositional plotting library; builds figures from plotters on an AnnData via the `A` accessor; `+`/`/` combine boards; `render()` last (Ch 24).
+
+**merge strategies (`ad.concat`)** - `None`/`same`/`unique`/`first`/`only` control how non-concat-axis elements and nested `uns` combine (Ch 20).
+
+**PAGA** - Partition-based Graph Abstraction: coarse-grained cluster connectivity graph; `threshold` prunes weak edges; feeds DPT and PAGA-initialized embeddings (Ch 24).
+
+**Pearson residuals** - Analytic normalization that removes depth technical variation, stabilizes mean-variance, and amplifies DE genes (residual variance >1); `sc.experimental.pp` (Lause 2021); output is **dense** (Ch 24).
+
+**rank_genes_groups** - One-vs-rest marker test per cluster (`method="wilcoxon"`); results in `uns`, flattened by `sc.get.rank_genes_groups_df`; per-cell p-values are pseudoreplication-inflated (Ch 23).
+
+**read_lazy / read_elem_lazy** - `anndata.experimental` lazy readers returning dask-backed `X` + lazy `obs`/`var` (`Dataset2D`); `load_annotation_index=True` skips index load; `to_memory()` for scanpy (Ch 19).
+
+**sc.pp / sc.tl / sc.pl** - Scanpy's three modules: preprocessing (matrix transforms), tools (named annotations), plotting (mirrors `tl`); functions mutate `adata` in place and return `None` (Ch 21).
+
+**sc.get / sc.queries / sc.metrics** - Satellite modules: extract results as DataFrames (`rank_genes_groups_df`, `aggregate`), annotation queries (`mitochondrial_genes`, `enrich`), evaluation (`morans_i`, `gearys_c`, `confusion_matrix`) (Ch 22).
+
+**view vs copy (AnnData)** - Subsetting returns a zero-copy *view*; copy-on-modify detaches it; `.copy()` materializes a real object (Ch 18).
+
+**write compatibility profile (`compat`)** - Every write function takes `compat="0.13"` (or a `WriteConfig`): the oldest anndata version guaranteed to read every element; `unwriteable()` checks without writing (Ch 19).

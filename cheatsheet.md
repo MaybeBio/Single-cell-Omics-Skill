@@ -339,3 +339,78 @@ Need to find a tool?
 | Spatial CCC | NicheNet spatial + Squidpy lr |
 | Cross-condition CCC | Tensor-cell2cell |
 | CCC over time | CellChat |
+
+## anndata & Scanpy Decision Rules (Ch 18-24)
+
+### AnnData file format / IO selection
+| Situation | Use | Why |
+|---|---|---|
+| Large or remote data | `write_zarr` + `read_lazy` | cloud-native, parallel, async, consolidated metadata |
+| Single-file portability / R exchange | `write_h5ad(compat="0.13")` | one file, older-version guarantee |
+| Fit in RAM, simple | `read_h5ad` / `read_zarr` | eager load |
+| Partial / backed access | `read_h5ad(backed="r")` or zarr construct | on-disk, load-on-access |
+
+### AnnData IO decision tree
+```
+Need to persist/read AnnData?
+├── Cloud / remote / huge → zarr (write_zarr) + read_lazy (dask)
+├── Single file, portable → h5ad (write_h5ad, compat="0.13")
+├── Backed / partial → read_h5ad(backed="r") or zarr.open + sparse_dataset
+├── Mutate a zarr store → zarr.open_group(use_consolidated=False) → write_elem → consolidate
+└── Cross-language → anndataR (R), Vitessce (JS), anndata-rs (Rust)
+```
+
+### `ad.concat` merge strategy quick pick
+| Goal | merge / uns_merge |
+|---|---|
+| Keep only elements shared by all objects | `"same"` |
+| Keep elements with a single possible value | `"unique"` |
+| Keep first-seen value per key (union) | `"first"` |
+| Keep elements in exactly one object | `"only"` |
+| Drop all side-elements | `None` (default) |
+
+### Scanpy plot-type quick pick
+| Goal | Function |
+|---|---|
+| Gene/category overview (mean + fraction) | `pl.dotplot` |
+| Full value distribution | `pl.violin` / `pl.stacked_violin` |
+| Mean expression heatmap (scaled) | `pl.matrixplot` |
+| Every cell (no collapse) | `pl.heatmap` |
+| Expression as bar height | `pl.tracksplot` |
+| DE results | `pl.rank_genes_groups_{dotplot,violin,heatmap,matrixplot,tracksplot}` |
+| Category hierarchy / correlation | `pl.dendrogram` / `pl.correlation_matrix` |
+
+### Scanpy integration quick pick (lightweight)
+| Goal | Method |
+|---|---|
+| Reference → query label+embedding transfer | `sc.tl.ingest(adata, ref, obs=...)` |
+| Symmetric graph-level batch correction | BBKNN (`batch_key`) |
+| Strong batch effect, raw counts, GPU | scVI/scANVI (heavier) |
+| Fast PCA correction | Harmony (heavier) |
+
+### Pearson residuals thresholds (Lause 2021)
+| Param | Default | Meaning |
+|---|---|---|
+| `theta` | 100 | NB overdispersion; `np.Inf` = Poisson |
+| `clip` | ±√n_cells | residual clipping; `np.Inf` = off |
+| `chunksize` | (none) | RAM-efficient HVG for large data |
+| output | dense | subset genes first |
+
+### AnnData slot contract (Ch 18)
+| Slot | Shape | Holds |
+|---|---|---|
+| `X` | n_obs × n_vars | count/expression matrix |
+| `obs`/`var` | DataFrame | cell/gene metadata |
+| `obsm`/`varm` | n_obs×d / n_vars×d | `X_umap`, `PCs` |
+| `obsp`/`varp` | square | `connectivities`, `distances` |
+| `layers` | n_obs × n_vars | `counts`, `scaled`, `raw` |
+| `uns` | dict | params, colors, `rank_genes_groups` |
+
+### Scanpy anti-patterns (additions)
+1. **`sudo pip install scanpy`** — never; use venv or `--user`.
+2. **`tl.louvain` in new code** — deprecated; use `tl.leiden` (needs `scanpy[leiden]`).
+3. **`scanpy.external` in new code** — deprecated (1.13.0); use scverse ecosystem.
+4. **`join="outer"` with sparse and treating 0 as absent** — outer pads zeros (indistinguishable from true absence).
+5. **Running Pearson residuals before gene selection** — dense output blows memory.
+6. **Forgetting `show=False` before customizing a plot** — early render ignores later edits.
+7. **Forgetting `var_names_make_unique` before concat/leiden** — index collisions.

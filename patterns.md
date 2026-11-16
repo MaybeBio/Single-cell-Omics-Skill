@@ -226,3 +226,55 @@
 **When to use**: need scRNA-seq reference across studies
 **How**: Use `cellxgene-census` Python/R API to query CZ CELLxGENE Census (33M+ cells, >60K genes, standardized). Avoid downloading individual datasets; the census handles harmonization.
 **Trade-offs**: Census is standardized and large; may not have latest datasets; tissue-specific atlases (HCA, Tabula) may be more curated for niche use cases.
+
+## anndata & Scanpy Patterns (Ch 18-24)
+
+### Lazy/backed loading for large or remote data
+**When to use**: datasets too big for RAM, or remote/cloud stores
+**How**: `ad.read_h5ad(path, backed="r")` (on-disk, close with `file.close()`) or `ad.experimental.read_lazy(store, load_annotation_index=True)` (dask-backed `X` + lazy `obs`/`var`); subset on metadata first, then `to_memory()` only the slice you need.
+**Trade-offs**: backed h5ad holds an open file handle; `read_lazy` `obs`/`var` are lazy `Dataset2D` incompatible with scanpy until `to_memory()`. Pick zarr over h5ad for remote (cloud-native, consolidated metadata).
+
+### zarr-over-h5ad persistence
+**When to use**: choosing an AnnData write format
+**How**: `adata.write_zarr(path)` for large/remote (parallel, async, sharded ≥0.13); `adata.write_h5ad(path, compat="0.13")` for single-file portability. Consolidated zarr stores are immutable — mutate via `zarr.open_group(use_consolidated=False)` + `zarr.consolidate_metadata()`.
+**Trade-offs**: zarr = directory of chunks (cloud-native, parallel); h5ad = one file (portable but serial, not cloud-native). Pin `compat` when older anndata or another language must read it.
+
+### Multi-resolution Leiden + dotplot annotation
+**When to use**: labeling clusters without a reference
+**How**: run `sc.tl.leiden` at several resolutions (`0.02/0.5/2.0`, `key_added="leiden_res_..."`, `flavor="igraph"`, `n_iterations=2`), then `sc.pl.dotplot(adata, marker_genes, groupby=..., standard_scale="var")` and map clusters → cell types by hand.
+**Trade-offs**: cluster count is resolution-arbitrary; the "right" resolution matches stable, marker-distinguishable groups. `standard_scale="var"` z-scores genes so low/high expressors are comparable.
+
+### ingest label transfer (reference-based annotation)
+**When to use**: an annotated reference captures the biology; new data needs labels+embedding
+**How**: `sc.pp.pca(ref); sc.pp.neighbors(ref); sc.tl.umap(ref)` then `sc.tl.ingest(query, ref, obs="celltype")`; after concat, `cat.reorder_categories(ref.cat.categories)` + copy `uns["..._colors"]`.
+**Trade-offs**: asymmetric (ref→query), transfers labels *and* embeddings; requires same `var_names` and a reference covering the query's cell types. BBKNN is the symmetric alternative (graph-only, no labels).
+
+### Pearson residuals pipeline (Lause 2021)
+**When to use**: replace normalize+log1p when you want variance-stabilized, technically-decorrelated data
+**How**: `sc.experimental.pp.highly_variable_genes(flavor="pearson_residuals", n_top_genes=2000, chunksize=...)` → subset → save `layers["raw"]` + `sqrt_norm` → `normalize_pearson_residuals` (dense) → PCA → neighbors → leiden. Wrappers `normalize_pearson_residuals_pca` / `recipe_pearson_residuals` do it in one call.
+**Trade-offs**: output is **dense** (subset genes first); `theta=100` default overdispersion, `clip=±√n_cells` default. Amplifies DE genes (residual variance >1) but discards the raw-count scale for downstream count models.
+
+### dask-scanpy for out-of-core scaling (experimental)
+**When to use**: >1M cells that don't fit in RAM
+**How**: `scanpy[dask]`; load `X` via `read_elem_lazy(..., chunks=(n_cells_chunk, n_vars))`; `normalize_total`/`log1p` stay lazy, but `highly_variable_genes`/`pca` force compute (obs isn't lazy); `obsm["X_pca"]` needs a manual `.compute()`. Swap `sc.pp.neighbors(transformer=AnnoyTransformer(k))` for speed.
+**Trade-offs**: dask poorly supports scipy.sparse chunks — go through scanpy/anndata or `map_blocks` densify; many functions are unsupported and may misbehave.
+
+### AnnCollection streaming (no full concat)
+**When to use**: many large/backed `.h5ad`s that must never be fully concatenated in RAM
+**How**: `AnnCollection([a, b], join_vars="inner", join_obs="outer", join_obsm="inner", label=..., convert={"X": lambda a: a.toarray()})`; `iterate_axis(n)` for out-of-core algorithms (e.g. IncrementalPCA); `to_adata()` returns `obs`+`obsm` only.
+**Trade-offs**: copies nothing from `X`/`layers` (joint index only); `to_adata()` lacks `X` — call it on an `AnnCollectionView` for data. `annbatch.Loader` is the supported minibatch path for PyTorch/JAX.
+
+### Labeled concatenation
+**When to use**: combining batches and tracking provenance
+**How**: `ad.concat({"a": a, "b": b}, join="outer", merge="same", label="dataset", index_unique="-", pairwise=False)`. Use `join="outer"` for differing var sets, `merge="same"` to keep only shared side-elements, `pairwise=True` to retain `obsp`/`varp`.
+**Trade-offs**: `join="outer"` pads sparse with **0** (dense with NaN) — zeros are indistinguishable from true absence; `index_unique` avoids index collisions.
+
+### Marsilea composed figures
+**When to use**: publication-grade multi-panel figures (dotplot + heatmap + QC side-by-side)
+**How**: `ma.Heatmap(adata, A.X[:, markers])` + `group_rows(A.obs["louvain"])` + `add_left/top/bottom/right(mp.Labels/Colors/Chunk/Numbers)` + `add_dendrogram` + `add_legends` + `render()` last; `+`/`/` combine boards with a shared `linkage`; `SizedHeatmap`=dotplot, `ClusterBoard`=tracksplot/stacked-violin.
+**Trade-offs**: compose-don't-configure vs scanpy's many-kwarg plots; per-cell `annotate_stats` tests inflate significance — pass precomputed p-values with `pvalues=`.
+
+### Cell cycle scoring + regression
+**When to use**: cell cycle is a confounding source of variation
+**How**: `sc.tl.score_genes_cell_cycle(adata, s_genes, g2m_genes)` (Tirosh 97 genes: 43 S + 54 G2M) → `obs["S_score"/"G2M_score"/"phase"]` → `sc.pp.regress_out(adata, ["S_score", "G2M_score"])`. Log1p first; score on the full matrix, not HVG.
+**Trade-offs**: ~70 of 97 cell-cycle genes aren't "highly variable"; scoring on HVG subset is ineffective. Regression removes the signal but can over-correct if cell cycle is the biology of interest.

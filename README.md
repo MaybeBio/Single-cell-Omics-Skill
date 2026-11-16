@@ -20,7 +20,7 @@
 <img src="image.png" alt="alt text" width="500">
 
 <br>
-原教程 16 章 50+ notebook + 6 个 awesome-lists → 17 个章节文件 + 4 个支撑索引
+原教程 16 章 50+ notebook + 6 个 awesome-lists + anndata/Scanpy 官方文档 → 24 个章节文件 + 4 个支撑索引
 
 覆盖从 FASTQ 到多模态整合的完整工作流 + 按模态的工具生态
 
@@ -221,7 +221,7 @@ npx skills add MaybeBio/Single-cell-Omics-Skill -a claude-code
 
 ## 已蒸馏章节
 
-17 章 + 4 个支撑文件，每个都是独立的、可按需加载的 markdown：
+24 章 + 4 个支撑文件，每个都是独立的、可按需加载的 markdown：
 
 ### 章节文件
 
@@ -244,15 +244,22 @@ npx skills add MaybeBio/Single-cell-Omics-Skill -a claude-code
 | 15 | scHi-C Tools Ecosystem | BandNorm distance-centric normalization，Higashi / Fast-Higashi imputation + tensor clustering，scGHOST subcompartments，SnapHiC2 loop calling |
 | 16 | Spatial Omics Tools Ecosystem | Visium / Xenium / MERFISH 分辨率分层，Cell2location / RCTD deconvolution，SpaGCN / STAGATE / BANKSY domains，Baysor / Cellpose segmentation |
 | 17 | Cross-Modality Resources | seandavi/awesome-single-cell + scRNA-tools.org 工具目录，CZ CELLxGENE Census 33M+ cells，scIB / pipeComp / Crowell 2020 benchmark，CellTypist / HCA / Tabula 参考图谱 |
+| 18 | anndata — Core Structure & API | AnnData 10-slot schema（X/obs/var/obsm/obsp/layers/uns/raw），view vs copy，accessors（anndata.acc），backed mode |
+| 19 | anndata — File Format & IO | h5ad vs zarr on-disk 编码，read_lazy / read_elem_lazy，write compat profiles，consolidated metadata，跨语言 IO |
+| 20 | anndata — Advanced Containers | dask / awkward arrays，ad.concat（join/merge 策略），AnnCollection / annbatch.Loader 流式加载 |
+| 21 | Scanpy — Core Workflow | sc.pp / sc.tl / sc.pl 三模块，10 步标准 pipeline，in-place 约定，安装与 settings |
+| 22 | Scanpy — API Reference & Plotting | io/get/queries/metrics/datasets/experimental 模块，array type 支持，绘图类型选择，matplotlib 定制 |
+| 23 | Scanpy — Clustering & Integration | 多分辨率 Leiden + dotplot 注释，rank_genes_groups，sc.tl.ingest vs BBKNN 整合 |
+| 24 | Scanpy — Advanced Methods | Pearson residuals（sc.experimental.pp），PAGA / DPT 轨迹，dask 扩展，cell cycle，kNN transformers，Marsilea 绘图 |
 
 ### 支撑文件
 
 | 文件 | 用途 |
 |---|---|
-| `SKILL.md` | skill 主文件--13 个 Core Frameworks（含工具生态）+ 章节 / 主题索引 + Scope & Limits |
-| `glossary.md` | 80+ 术语表（带章节定位）--ADT、AnnData、AUCell、CDR3、CLR、dsb、HVG、Moran's I、scIB、scVI、TCRdist、WNN；以及 ArchR、BandNorm、Cell2location、chromVAR、FigR、Higashi、SnapATAC2、SpaGCN、Tangram、Visium、Xenium 等工具生态术语 |
-| `patterns.md` | 按任务分类的具体技术--QC、normalization、clustering、integration、DGE、trajectory、mechanism、spatial、multimodal、perturbation；以及按阶段组装工具、scHi-C 预处理、空间分辨率分层、SVG 检测、参考优先注释、工具发现、基准测试、Census 查询 |
-| `cheatsheet.md` | 决策规则速查--每模态 QC 阈值、normalization 决策树、整合方法选择、scIB metrics、反模式清单、标准 pipeline 顺序；以及 scRNA/scATAC/spatial/scHi-C 工具套件选择、DGE/整合/空间工具快速挑选、参考图谱快速选择、ambient RNA/doublet/CNV/CCC 决策表 |
+| `SKILL.md` | skill 主文件--18 个 Core Frameworks（含工具生态 + anndata/Scanpy API）+ 章节 / 主题索引 + Scope & Limits |
+| `glossary.md` | 100+ 术语表（带章节定位）--ADT、AnnData、AUCell、CDR3、CLR、dsb、HVG、Moran's I、scIB、scVI、TCRdist、WNN；以及 ArchR、BandNorm、Cell2location、chromVAR、FigR、Higashi、SnapATAC2、SpaGCN、Tangram、Visium、Xenium 等工具生态术语，外加 accessor、backed mode、ingest、marsilea、PAGA、Pearson residuals、rank_genes_groups、sc.pp/tl/pl 等 anndata/Scanpy API 术语 |
+| `patterns.md` | 按任务分类的具体技术--QC、normalization、clustering、integration、DGE、trajectory、mechanism、spatial、multimodal、perturbation；以及按阶段组装工具、scHi-C 预处理、空间分辨率分层、SVG 检测、参考优先注释、工具发现、基准测试、Census 查询；外加 lazy/backed 加载、zarr-over-h5ad、多分辨率 Leiden + dotplot、ingest label transfer、Pearson residuals pipeline、dask-scanpy 扩展、AnnCollection 流式、Marsilea 组合绘图、cell cycle 评分 |
+| `cheatsheet.md` | 决策规则速查--每模态 QC 阈值、normalization 决策树、整合方法选择、scIB metrics、反模式清单、标准 pipeline 顺序；以及 scRNA/scATAC/spatial/scHi-C 工具套件选择、DGE/整合/空间工具快速挑选、参考图谱快速选择、ambient RNA/doublet/CNV/CCC 决策表；外加 anndata 文件格式/IO 选择、ad.concat merge 策略、Scanpy 绘图类型快速挑选、ingest vs BBKNN、Pearson 阈值、AnnData slot 契约 |
 
 ---
 
@@ -288,11 +295,11 @@ Key Takeaways → Connects To
 ```
 Single-cell-Omics-Skill/
 ├── CLAUDE.md                    # 仓库说明（双层级结构 + 查询路径）
-├── SKILL.md                     # skill 主文件（13 个 Core Frameworks + 17 章索引）
+├── SKILL.md                     # skill 主文件（18 个 Core Frameworks + 24 章索引）
 ├── glossary.md                  # 术语表（含工具生态术语）
 ├── patterns.md                  # 任务级技术模式（含工具选择模式）
 ├── cheatsheet.md                # 决策规则速查（含工具套件选择）
-├── chapters/                    # 17 个蒸馏后的章节文件
+├── chapters/                    # 24 个蒸馏后的章节文件
 │   ├── ch01-introduction.md
 │   ├── ch02-preprocessing-visualization.md
 │   ├── ch03-cellular-structure.md
@@ -309,14 +316,23 @@ Single-cell-Omics-Skill/
 │   ├── ch14-scatac-seq-tools.md         # 工具生态：scATAC-seq
 │   ├── ch15-schic-tools.md              # 工具生态：scHi-C
 │   ├── ch16-spatial-omics-tools.md      # 工具生态：空间组学
-│   └── ch17-cross-modality-resources.md # 工具生态：跨模态资源
-├── manuals/                     # 工具目录源材料（6 个 awesome-lists README）
+│   ├── ch17-cross-modality-resources.md # 工具生态：跨模态资源
+│   ├── ch18-anndata-core.md             # anndata：核心结构与 API
+│   ├── ch19-anndata-io-format.md        # anndata：文件格式与 IO
+│   ├── ch20-anndata-advanced.md         # anndata：高级容器（dask/concat/AnnCollection）
+│   ├── ch21-scanpy-core.md              # Scanpy：核心工作流（pp/tl/pl）
+│   ├── ch22-scanpy-api-plotting.md      # Scanpy：API 参考与绘图
+│   ├── ch23-scanpy-clustering-integration.md # Scanpy：聚类与整合
+│   └── ch24-scanpy-advanced.md          # Scanpy：高级方法（pearson/PAGA/dask）
+├── manuals/                     # 工具目录源材料（awesome-lists + anndata/Scanpy 官方文档）
 │   ├── seandavi_awesome-single-cell_README.md
 │   ├── scATAC-seq/mdozmorov_scATAC-seq_notes_README.md
 │   ├── scHiC/mdozmorov_scHiC_notes_README.md
 │   ├── scRNA-seq/mdozmorov_scRNA-seq_notes_README.md
 │   ├── scRNA-seq/crazyhottommy_scRNAseq-analysis-notes_README.md
-│   └── spatial_omics/crazyhottommy_awesome_spatial_omics_README.md
+│   ├── spatial_omics/crazyhottommy_awesome_spatial_omics_README.md
+│   ├── anndata/                         # anndata 官方文档（20 文件）
+│   └── Scanpy/                          # Scanpy 官方文档（32 文件）
 └── sc-best-practices/           # 原书源材料（16 章 .ipynb / .md）
     ├── 1-Introduction/
     ├── 2-Preprocessing_and_visualization/

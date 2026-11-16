@@ -1,11 +1,11 @@
 ---
 name: sc-omics
-description: Distilled best-practice workflows and tool ecosystem for single-cell multi-omics analysis - covers scRNA-seq, scATAC-seq, scHi-C, CITE-seq, spatial, AIRR, and multimodal integration. Use when planning or executing single-cell analysis pipelines, choosing QC/normalization/integration methods, picking tools by pipeline stage, or interpreting results from scanpy/muon/scirpy/squidpy/scvi-tools/ArchR/Higashi/Cell2location.
+description: Distilled best-practice workflows and tool ecosystem for single-cell multi-omics analysis - covers scRNA-seq, scATAC-seq, scHi-C, CITE-seq, spatial, AIRR, and multimodal integration. Use when planning or executing single-cell analysis pipelines, choosing QC/normalization/integration methods, picking tools by pipeline stage, interpreting results from scanpy/muon/scirpy/squidpy/scvi-tools/ArchR/Higashi/Cell2location, or looking up the anndata/scanpy API (AnnData structure, IO/file formats, pp/tl/pl functions, clustering, integration, plotting).
 ---
 
 # Single-cell Best Practices
 
-A practical reference for single-cell multi-omics analysis distilled from theislab/single-cell-best-practices (Heumos et al., Nat Rev Genet 2023, v0.2.0 2026-06-11) plus curated tool catalogs from seandavi/awesome-single-cell, mdozmorov/sc{RNA,ATAC,HiC}-notes, and crazyhottommy/awesome_spatial_omics. Covers 17 chapters from raw scRNA-seq processing through multimodal integration and per-modality tool ecosystems, with decision rules, code patterns, and worked examples using the scverse ecosystem (scanpy, muon, scirpy, squidpy, scvi-tools, decoupler, pertpy).
+A practical reference for single-cell multi-omics analysis distilled from theislab/single-cell-best-practices (Heumos et al., Nat Rev Genet 2023, v0.2.0 2026-06-11) plus curated tool catalogs from seandavi/awesome-single-cell, mdozmorov/sc{RNA,ATAC,HiC}-notes, and crazyhottommy/awesome_spatial_omics, and the official **anndata** and **Scanpy** API documentation. Covers 24 chapters from raw scRNA-seq processing through multimodal integration, per-modality tool ecosystems, and the anndata/Scanpy API reference, with decision rules, code patterns, and worked examples using the scverse ecosystem (scanpy, anndata, muon, scirpy, squidpy, scvi-tools, decoupler, pertpy).
 
 ## When to Use
 
@@ -16,12 +16,13 @@ A practical reference for single-cell multi-omics analysis distilled from theisl
 - Interpreting cluster annotations, integration results, or differential analyses
 - Debugging pipelines (batch effects, doublets, ambient RNA, sparse data)
 - Finding reference atlases (CellTypist, HCA, Tabula) or benchmarks (scIB, pipeComp)
+- Looking up the anndata/Scanpy API (AnnData slots, h5ad/zarr IO, `sc.pp`/`sc.tl`/`sc.pl`, clustering, integration, plotting)
 
 **Not for**: bulk RNA-seq, single-cell proteomics (SCP), imaging-only analysis. For those, see the original book's outlook chapter.
 
 ## Core Frameworks
 
-The 17 chapters teach a coherent end-to-end pipeline plus per-modality tool ecosystems. Each chapter file (`chapters/chNN-*.md`) follows the same structure: Core Idea -> Frameworks Introduced -> Key Concepts -> Mental Models -> Anti-patterns -> Code Examples -> Reference Tables -> Worked Example -> Key Takeaways -> Connects To.
+The 24 chapters teach a coherent end-to-end pipeline plus per-modality tool ecosystems and the anndata/Scanpy API. Each chapter file (`chapters/chNN-*.md`) follows the same structure: Core Idea -> Frameworks Introduced -> Key Concepts -> Mental Models -> Anti-patterns -> Code Examples -> Reference Tables -> Worked Example -> Key Takeaways -> Connects To.
 
 1. **Per-modality QC specialization** - RNA (mt%, gene count, MAD), ATAC (TSS enrichment, nucleosome signal, FRiP), ADT (n_proteins detected, valley filter), AIRR (chain_qc). Each modality has different quality signals; reusing RNA thresholds is a common anti-pattern.
 2. **Normalization matches the data distribution** - RNA: log1p + scran + Pearson residuals (3 layers); ATAC: TF-IDF + LSI; ADT: dsb (with empty droplets + isotype controls) > CLR (fallback); AIRR: scirpy stores in `adata.obs`.
@@ -36,6 +37,11 @@ The 17 chapters teach a coherent end-to-end pipeline plus per-modality tool ecos
 11. **Tool selection is stage-specialized, not monolithic** - no single tool excels at every pipeline stage; assemble best-in-class per stage (FASTQ -> ambient -> doublet -> QC -> normalize -> HVG -> integrate -> cluster -> annotate -> DGE). scverse (Python) and Seurat+Bioconductor (R) are the two ecosystems; pick one per project (Ch 13).
 12. **Per-modality tool ecosystems have converged** - scATAC: ArchR > Signac > SnapATAC2 (TF-IDF + LSI, drop comp 1); scHi-C: BandNorm + Higashi imputation + Fast-Higashi clustering (always impute, sparsest modality); Spatial: resolution tier (subcellular / single-cell / spot) dictates pipeline; spot-based needs Cell2location deconvolution (Ch 14-16).
 13. **Benchmark before adopting, atlas before training** - scIB (integration), pipeComp (preprocessing), Crowell 2020 (DE); novel preprint methods often fail to outperform established. Reference atlases (CellTypist, HCA, Tabula, CZ CELLxGENE Census 33M+ cells) save months; check before training custom (Ch 17).
+14. **AnnData is the 10-slot contract everything flows through** - `X` + `obs`/`var` + `obsm`/`varm` + `obsp`/`varp` + `layers` + `uns` + `raw`, each with a fixed alignment rule. Subsetting returns a cheap **view** (copy-on-modify detaches); string index = label-based, integer = positional. Keep raw counts in `layers["counts"]` (Ch 18).
+15. **Prefer zarr over h5ad; keep data lazy** - zarr is cloud-native/parallel/sharded, h5ad is a single serial file; `read_lazy`/`read_elem_lazy` give dask-backed access, `backed="r"` gives on-disk access. Pin `compat="0.13"` for cross-version readers. Scale further with `ad.concat`, `AnnCollection`, `annbatch.Loader` (Ch 19-20).
+16. **Scanpy = pp (transform) / tl (annotate) / pl (plot), all in-place** - functions mutate `adata` and return `None`; results land in `obs`/`obsm`/`uns`. The canonical 10-call pipeline (filter→normalize→log1p→HVG→PCA→neighbors→UMAP→Leiden→rank_genes_groups) is fixed; `neighbors` is the choke point (Ch 21).
+17. **Clustering is multi-resolution Leiden + dotplot; integration is ingest vs BBKNN** - run Leiden at 0.02/0.5/2.0 and annotate with a marker dotplot (`standard_scale="var"`); `sc.tl.ingest` transfers reference labels+embeddings (asymmetric), BBKNN corrects the graph (symmetric); both leave `X` intact (Ch 23).
+18. **Pearson residuals replace normalize+log1p in one step** - `sc.experimental.pp` removes depth technical variation, stabilizes variance, amplifies DE genes (residual variance >1); output is **dense** so subset genes first. PAGA+DPT give topology+pseudotime; dask scales to 1M+ cells (experimental) (Ch 24).
 
 ## Chapter Index
 
@@ -58,6 +64,13 @@ The 17 chapters teach a coherent end-to-end pipeline plus per-modality tool ecos
 | 15 | [scHi-C Tools Ecosystem](chapters/ch15-schic-tools.md) | BandNorm + Higashi? SnapHiC loop calling? scGHOST subcompartments? |
 | 16 | [Spatial Omics Tools Ecosystem](chapters/ch16-spatial-omics-tools.md) | Visium vs Xenium pipeline? Cell2location? SpaGCN vs STAGATE? |
 | 17 | [Cross-Modality Resources](chapters/ch17-cross-modality-resources.md) | Where to find tools (awesome-single-cell, scRNA-tools.org), atlases (HCA, Tabula), benchmarks (scIB, pipeComp)? |
+| 18 | [anndata — Core Structure & API](chapters/ch18-anndata-core.md) | What are AnnData's slots (X/obs/var/obsm/layers/uns) and view/copy semantics? |
+| 19 | [anndata — File Format & IO](chapters/ch19-anndata-io-format.md) | h5ad vs zarr, on-disk encoding, `read_lazy`, `compat` profiles, cross-language IO? |
+| 20 | [anndata — Advanced Containers](chapters/ch20-anndata-advanced.md) | dask/awkward arrays, `ad.concat`, AnnCollection/annbatch streaming? |
+| 21 | [Scanpy — Core Workflow](chapters/ch21-scanpy-core.md) | The pp/tl/pl modules, 10-call pipeline, install/settings? |
+| 22 | [Scanpy — API Reference & Plotting](chapters/ch22-scanpy-api-plotting.md) | io/get/queries/metrics/datasets modules, plot-type selection, matplotlib customization? |
+| 23 | [Scanpy — Clustering & Integration](chapters/ch23-scanpy-clustering-integration.md) | Multi-resolution Leiden + dotplot annotation, `ingest` vs BBKNN? |
+| 24 | [Scanpy — Advanced Methods](chapters/ch24-scanpy-advanced.md) | Pearson residuals, PAGA/DPT, dask, cell cycle, kNN transformers, Marsilea? |
 
 ## Topic Index (Cross-Chapter Lookup)
 
@@ -159,12 +172,29 @@ The 17 chapters teach a coherent end-to-end pipeline plus per-modality tool ecos
 - Visualization
   - UMAP, PCA, dotplot - Ch 02, 03
   - Spatial embedding - Ch 09
+  - Scanpy plotting (dotplot/violin/heatmap/matrixplot/tracksplot) - Ch 22
+  - Marsilea composed figures - Ch 24
+- anndata & Scanpy API (Ch 18-24)
+  - AnnData structure & slots (X/obs/var/obsm/obsp/layers/uns/raw) - Ch 18
+  - views vs copies, indexing, accessors (`anndata.acc`) - Ch 18
+  - h5ad vs zarr, backed mode, read_lazy - Ch 19
+  - on-disk encodings, write compat profiles, cross-language IO - Ch 19
+  - dask/awkward arrays, ad.concat, AnnCollection, annbatch - Ch 20
+  - sc.pp / sc.tl / sc.pl modules - Ch 21
+  - sc.get / sc.queries / sc.metrics / sc.datasets - Ch 22
+  - array type support, plot customization - Ch 22
+  - clustering (multi-resolution Leiden, rank_genes_groups) - Ch 23
+  - integration (ingest vs BBKNN) - Ch 23
+  - Pearson residuals (sc.experimental.pp) - Ch 24
+  - PAGA / DPT / trajectory - Ch 24
+  - cell cycle scoring + regression - Ch 24
+  - dask-scanpy scaling, kNN transformers - Ch 24
 
 ## Supporting Files
 
-- **[glossary.md](glossary.md)** - every significant term with chapter pointer (ADT, AnnData, AUCell, batch effect, BCR, CDR3, CLR, clonotype, dsb, doublet, FASTQ, HVG, Harmony, Leiden, MAD, marker gene, Moran's I, MuData, NicheNet, pseudobulk, pseudotime, regulon, scIB, scirpy, scVI, spectratype, SHM, TCRdist, totalVI, UMI, VDJ, WNN; plus tool ecosystem terms: ArchR, BandNorm, Cell2location, CellTypist, chromVAR, FigR, Higashi, LIANA, Numbat, scArches, scDblFinder, SCENIC, SnapATAC2, SpaGCN, Tangram, Visium, Xenium, etc.).
-- **[patterns.md](patterns.md)** - concrete techniques organized by task: QC patterns, normalization patterns, clustering & annotation, integration, differential analysis, trajectory, mechanism, spatial, multimodal, perturbation; plus tool selection patterns: per-stage assembly, suite choice (ArchR/Signac/SnapATAC2), scHi-C preprocessing, spatial resolution tiers, SVG detection, reference-first annotation, pseudobulk DGE, tool discovery, benchmarking, census queries.
-- **[cheatsheet.md](cheatsheet.md)** - decision rules, thresholds, and lookup tables: QC thresholds per modality, normalization decision tree, clustering resolution guide, integration method selection, scIB metrics, DGE/CCC/trajectory/spatial/AIRR method selection, common anti-patterns, standard pipeline order (RNA + CITE-seq); plus tool ecosystem decision rules: scRNA/scATAC/spatial/scHi-C suite selection, DGE/integration/spatial tool quick pick, tool discovery decision tree, reference atlas quick pick, ambient RNA/doublet/CNV/CCC decisions.
+- **[glossary.md](glossary.md)** - every significant term with chapter pointer (ADT, AnnData, AUCell, batch effect, BCR, CDR3, CLR, clonotype, dsb, doublet, FASTQ, HVG, Harmony, Leiden, MAD, marker gene, Moran's I, MuData, NicheNet, pseudobulk, pseudotime, regulon, scIB, scirpy, scVI, spectratype, SHM, TCRdist, totalVI, UMI, VDJ, WNN; plus tool ecosystem terms: ArchR, BandNorm, Cell2location, CellTypist, chromVAR, FigR, Higashi, LIANA, Numbat, scArches, scDblFinder, SCENIC, SnapATAC2, SpaGCN, Tangram, Visium, Xenium; plus anndata/Scanpy API terms: accessor (`anndata.acc`), AnnCollection, annbatch.Loader, backed mode, BBKNN, consolidated metadata, dask-backed, h5ad/zarr, ingest, layers/obsm/obsp/raw, marsilea, merge strategies, PAGA, Pearson residuals, rank_genes_groups, read_lazy, sc.pp/tl/pl, sc.get/queries/metrics, view vs copy, write compat).
+- **[patterns.md](patterns.md)** - concrete techniques organized by task: QC patterns, normalization patterns, clustering & annotation, integration, differential analysis, trajectory, mechanism, spatial, multimodal, perturbation; plus tool selection patterns: per-stage assembly, suite choice (ArchR/Signac/SnapATAC2), scHi-C preprocessing, spatial resolution tiers, SVG detection, reference-first annotation, pseudobulk DGE, tool discovery, benchmarking, census queries; plus anndata/Scanpy patterns: lazy/backed loading, zarr-over-h5ad, multi-resolution Leiden + dotplot, ingest label transfer, Pearson residuals pipeline, dask-scanpy scaling, AnnCollection streaming, labeled concatenation, Marsilea composition, cell cycle scoring.
+- **[cheatsheet.md](cheatsheet.md)** - decision rules, thresholds, and lookup tables: QC thresholds per modality, normalization decision tree, clustering resolution guide, integration method selection, scIB metrics, DGE/CCC/trajectory/spatial/AIRR method selection, common anti-patterns, standard pipeline order (RNA + CITE-seq); plus tool ecosystem decision rules: scRNA/scATAC/spatial/scHi-C suite selection, DGE/integration/spatial tool quick pick, tool discovery decision tree, reference atlas quick pick, ambient RNA/doublet/CNV/CCC decisions; plus anndata/Scanpy decision rules: file-format/IO selection, `ad.concat` merge strategies, plot-type quick pick, lightweight integration (ingest vs BBKNN), Pearson-residual thresholds, AnnData slot contract.
 
 ## Worked Examples
 
@@ -184,7 +214,7 @@ Each chapter includes a worked example on real data, primarily using:
 
 **Out of scope**: single-cell proteomics (SCP), imaging-based cytometry (without sequencing), long-read scRNA-seq assembly, single-cell methylation (scBS-seq) as standalone modality. See Outlook chapter of the original book for these emerging areas.
 
-**Software assumptions**: scverse ecosystem (scanpy ≥1.10, muon, scirpy ≥0.13, squidpy, scvi-tools ≥1.0, decoupler, pertpy). R interoperability via rpy2 + anndata2ri + reticulate; Seurat v4/v5 for WNN and anchor-based integration; ArchR or Signac for scATAC; Higashi/Fast-Higashi + BandNorm for scHi-C; Cell2location + squidpy for spatial. Python 3.10+ recommended.
+**Software assumptions**: scverse ecosystem (anndata ≥0.13, scanpy ≥1.10, muon, scirpy ≥0.13, squidpy, scvi-tools ≥1.0, decoupler, pertpy). R interoperability via rpy2 + anndata2ri + reticulate; Seurat v4/v5 for WNN and anchor-based integration; ArchR or Signac for scATAC; Higashi/Fast-Higashi + BandNorm for scHi-C; Cell2location + squidpy for spatial. Python 3.10+ recommended (anndata 0.13 needs Python 3.13+).
 
 **Citation**: Heumos L, Schaar AC, Lance C, et al. (2023). "Best practices for single-cell analysis across modalities." *Nat Rev Genet* 24:550–572. DOI: 10.1038/s41576-023-00586-w. Book: https://www.sc-best-practices.org. Tool catalogs: seandavi/awesome-single-cell, mdozmorov/sc{RNA,ATAC,HiC}-notes, crazyhottommy/awesome_spatial_omics.
 
@@ -197,3 +227,4 @@ Each chapter includes a worked example on real data, primarily using:
 - Anti-patterns marked with ❌ in code; recommended patterns marked with ✓
 - Chapters 01-12 are distilled from theislab/single-cell-best-practices (theoretical foundations, best practices)
 - Chapters 13-17 are distilled from curated tool catalogs (modality-specific tool ecosystems, resources)
+- Chapters 18-24 are distilled from the official anndata and Scanpy documentation (API reference, file format, tutorials); API signatures reflect anndata ≥0.13 and Scanpy ≥1.10

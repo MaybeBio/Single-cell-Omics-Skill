@@ -4,10 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repository is
 
-A standalone knowledge base combining two layers:
+A standalone knowledge base combining three layers:
 
 1. **Source material** (`sc-best-practices/`) — a read-only snapshot of the "Single-cell best practices" book (theislab/single-cell-best-practices, v0.2.0, 2026-06-11), the published companion to Heumos, Schaar, Lance et al., *Nat Rev Genet* (2023), https://doi.org/10.1038/s41576-023-00586-w.
-2. **Distilled skill** (root-level `SKILL.md` + `chapters/` + `glossary.md` + `patterns.md` + `cheatsheet.md`) — a structured agent skill generated from the source via the `book-to-skill` converter, designed for fast lookup during single-cell multi-omics analysis.
+2. **Tool documentation** (`manuals/`) — curated tool catalogs (seandavi/awesome-single-cell, mdozmorov/sc{RNA,ATAC,HiC}-notes, crazyhottommy/awesome_spatial_omics) plus the official **anndata** and **Scanpy** API documentation.
+3. **Distilled skill** (root-level `SKILL.md` + `chapters/` + `glossary.md` + `patterns.md` + `cheatsheet.md`) — a structured agent skill generated from the sources via the `book-to-skill` converter, designed for fast lookup during single-cell multi-omics analysis.
 
 This is **not** a git repo, has no build system, no tests, no dependency files, and no environment yml. The notebooks in `sc-best-practices/` reference datasets loaded via `lamindb` that are not in this snapshot, so they cannot be executed here. The distilled skill files are reference content to be consulted, not executed.
 
@@ -17,8 +18,8 @@ This is **not** a git repo, has no build system, no tests, no dependency files, 
 
 | File | Purpose |
 |---|---|
-| `SKILL.md` | Master skill file with frontmatter, 10 Core Frameworks, Chapter Index, Topic Index, Scope & Limits |
-| `chapters/ch01-…` to `ch12-…` | 12 chapter summaries following a fixed structure: Core Idea → Frameworks → Key Concepts → Mental Models → Anti-patterns → Code Examples → Reference Tables → Worked Example → Key Takeaways → Connects To |
+| `SKILL.md` | Master skill file with frontmatter, 18 Core Frameworks, Chapter Index, Topic Index, Scope & Limits |
+| `chapters/ch01-…` to `ch24-…` | 24 chapter summaries following a fixed structure: Core Idea → Frameworks → Key Concepts → Mental Models → Anti-patterns → Code Examples → Reference Tables → Worked Example → Key Takeaways → Connects To |
 | `glossary.md` | 50+ key terms with chapter pointers (ADT, AnnData, AUCell, batch effect, CDR3, CLR, clonotype, dsb, HVG, Harmony, Leiden, MAD, Moran's I, MuData, NicheNet, pseudobulk, scIB, scirpy, scVI, SHM, TCRdist, totalVI, UMI, VDJ, WNN) |
 | `patterns.md` | Concrete techniques by task: QC, normalization, clustering, integration, DGE, trajectory, mechanism, spatial, multimodal, perturbation |
 | `cheatsheet.md` | Decision rules and lookup tables: QC thresholds per modality, normalization decision tree, integration method selection, scIB metrics, anti-patterns, standard pipeline order |
@@ -48,7 +49,7 @@ This is **not** a git repo, has no build system, no tests, no dependency files, 
 
 Files within each source chapter are named `<NN>_<topic>.ipynb` or `.md`. The two-digit prefix is **global across the book** (01–49), so a file number uniquely identifies a file regardless of which chapter it lives in.
 
-The distilled skill chapter files in `chapters/` use a separate numbering `ch01-…` to `ch12-…` and are independent markdown documents (not Jupyter Book notebooks).
+The distilled skill chapter files in `chapters/` use a separate numbering `ch01-…` to `ch24-…` and are independent markdown documents (not Jupyter Book notebooks). Chapters 01–12 distill the book, 13–17 distill the tool catalogs, and 18–24 distill the anndata/Scanpy official documentation.
 
 ## What is missing from this snapshot
 
